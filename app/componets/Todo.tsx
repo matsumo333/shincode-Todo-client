@@ -3,6 +3,7 @@ import {TodoType} from "../types";
 import { isNotFoundError } from 'next/dist/client/components/not-found';
 import useSWR, { mutate } from 'swr';
 import { useTodos } from '../hooks/useTodos';
+import { API_URL } from '@/constants/url';
 
 type Todoprops={
   todo: TodoType;
@@ -17,7 +18,7 @@ const Todo = ({todo}:Todoprops) => {
   const handleEdit =async() =>{
     setIsEditing(!isEditing);
     if(isEditing){
-      const response =await fetch(`http://localhost:8080/editTodo/${todo.id}`,{
+      const response =await fetch(`${API_URL}/${todo.id}`,{
         method:"PUT",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ 
@@ -33,7 +34,7 @@ const Todo = ({todo}:Todoprops) => {
   }
 };
   const handleDelete =async(id:number) =>{
-   const response =await fetch(`http://localhost:8080/deleteTodo/${todo.id}`,
+   const response =await fetch(`${API_URL}/deleteTodo/${todo.id}`,
     {
         method:"DELETE",
         headers:{"Content-Type":"application/json"},
@@ -46,7 +47,7 @@ const Todo = ({todo}:Todoprops) => {
     };
   
     const toggleTodoCompletion =async(id:number,isCompleted:boolean)=>{
-      const response =await fetch(`http://localhost:8080/editTodo/${todo.id}`,{
+      const response =await fetch(`${API_URL}/editTodo/${todo.id}`,{
         method:"PUT",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ isCompleted: !isCompleted }),

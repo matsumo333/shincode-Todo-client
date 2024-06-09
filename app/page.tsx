@@ -6,6 +6,7 @@ import {TodoType} from "./types";
 import { useRef } from "react";
 import Input from "postcss/lib/input";
 import { useTodos } from "./hooks/useTodos";
+import { API_URL } from "@/constants/url";
 
 
 export default function Home() {
@@ -13,7 +14,8 @@ export default function Home() {
   const{todos,isLoading,error,mutate}=useTodos();
 const handleSubmit =async(e: React.FormEvent) =>{
   e.preventDefault();
-  const response =await fetch(`http://localhost:8080/createTodo`,{
+  console.log("絵ピー",API_URL)
+  const response =await fetch(`${API_URL}/createTodo`,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ title:inputRef.current?.value,isCompleted:false,
