@@ -5,15 +5,12 @@ import useSWR from "swr";
 import {TodoType} from "./types";
 import { useRef } from "react";
 import Input from "postcss/lib/input";
+import { useTodos } from "./hooks/useTodos";
 
-async function fetcher(key:string){
-  return fetch(key).then((res)=>res.json());
-}
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { data,isLoading,error,mutate} =useSWR("http://localhost:8080/allTodos",fetcher);
-// console.log(data);
+  const{todos,isLoading,error,mutate}=useTodos();
 const handleSubmit =async(e: React.FormEvent) =>{
   e.preventDefault();
   const response =await fetch(`http://localhost:8080/createTodo`,{
@@ -25,7 +22,7 @@ const handleSubmit =async(e: React.FormEvent) =>{
     });
     if(response.ok){
       const newTodo=await response.json();
-  mutate([...data,newTodo])
+  mutate([...todos,newTodo])
   inputRef.current!.value="";
     }
 };
@@ -60,7 +57,7 @@ const handleSubmit =async(e: React.FormEvent) =>{
     </div>
   </form>
   <ul className="divide-y divide-gray-200 px-4">
-    {data?.map((todo:TodoType) =>(
+    {todos?.map((todo:TodoType) =>(
       <Todo key={todo.id} todo={todo} />
     ))}
 
