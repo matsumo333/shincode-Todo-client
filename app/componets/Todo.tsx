@@ -1,6 +1,37 @@
-import React from 'react'
+import React, { useState } from 'react'
+import {TodoType} from "../types";
+import { isNotFoundError } from 'next/dist/client/components/not-found';
+import useSWR, { mutate } from 'swr';
 
-const Todo = () => {
+type Todoprops={
+  todo: TodoType;
+};
+
+async function fetcher(key:string){
+  return fetch(key).then((res)=>res.json());
+}
+const Todo = ({todo}:Todoprops) => {
+  const[isEditing,setIsEditing]=useState<boolean>(false);
+  const[editedTitle,setEditiedTitle]=useState<string>(todo.title);
+  const { data, error,mutate } = useSWR('http://localhost:8080/allTodos', fetcher);
+  
+  const handleEdit =async() =>{
+    setIsEditing(!isEditing);
+    if(isEditing){
+      const response =await fetch(`http://localhost:8080/editTodo/${todo.id}`,{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ 
+        title:editedTitle }),
+           
+        });
+        if(response.ok){
+          const editedTodo=await response.json();
+          mutate([...data,editedTodo]);
+          setEditiedTitle("");
+        }
+    }
+  }
   return (
     <div> <li className="py-4">
     <div className="flex items-center justify-between">
@@ -14,14 +45,21 @@ const Todo = () => {
                 border-gray-300 rounded"
         />
         <label className="ml-3 block text-gray-900">
-          <span className="text-lg font-medium mr-2"> 散歩 </span>
+          {isEditing ? (
+            <input type="text" className="border rounded py-1 py-2" 
+            value={editedTitle}
+            onChange={(e)=>setEditiedTitle(e.target.value)}
+            />
+          ):(
+          <span className="text-lg font-medium mr-2"> {todo.title} </span>)}
         </label>
       </div>
       <div className="flex items-center space-x-2">
         <button
+        onClick={handleEdit}
           className="duration-150 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-2 rounded"
         >
-          ✒
+          {isEditing ? "Save" : "✒"}
         </button>
         <button
           className="bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-2 rounded"

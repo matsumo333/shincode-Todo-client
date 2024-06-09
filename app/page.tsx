@@ -2,15 +2,35 @@
 import Image from "next/image";
 import Todo from "./componets/Todo";
 import useSWR from "swr";
+import {TodoType} from "./types";
+import { useRef } from "react";
+import Input from "postcss/lib/input";
 
 async function fetcher(key:string){
   return fetch(key).then((res)=>res.json());
 }
 
 export default function Home() {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const { data,isLoading,error,mutate} =useSWR("http://localhost:8080/allTodos",fetcher);
+// console.log(data);
+const handleSubmit =async(e: React.FormEvent) =>{
+  e.preventDefault();
+  const response =await fetch(`http://localhost:8080/createTodo`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ title:inputRef.current?.value,isCompleted:false,
+       }),
+       
+    });
+    if(response.ok){
+      const newTodo=await response.json();
+  mutate([...data,newTodo])
+  inputRef.current!.value="";
+    }
+};
 
-  const { data,isLoading,error} =useSWR("http://localhost:8080/allTodos",fetcher);
-console.log(data);
+
   return (
 <div
   className="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-32 py-4 px-4"
@@ -18,7 +38,9 @@ console.log(data);
   <div className="px-4 py-2">
     <h1 className="text-gray-800 font-bold text-2xl uppercase">To-Do List</h1>
   </div>
-  <form className="w-full max-w-sm mx-auto px-4 py-2">
+  <form 
+  className="w-full max-w-sm mx-auto px-4 py-2" 
+  onSubmit={handleSubmit}>
     <div className="flex items-center border-b-2 border-teal-500 py-2">
       <input
         className="appearance-none bg-transparent
@@ -26,6 +48,7 @@ console.log(data);
       focus:outline-none"
         type="text"
         placeholder="Add a task"
+        ref={inputRef}
         // value="{title}"
       />
       <button
@@ -37,8 +60,10 @@ console.log(data);
     </div>
   </form>
   <ul className="divide-y divide-gray-200 px-4">
- <Todo />
- <Todo />
+    {data?.map((todo:TodoType) =>(
+      <Todo key={todo.id} todo={todo} />
+    ))}
+
  
     
   </ul>
